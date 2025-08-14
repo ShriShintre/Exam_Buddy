@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Exam Buddy{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                 <i class="fas fa-graduation-cap"></i>
+                <span>Exam Buddy</span> 
+            </div>
+            <ul class="nav-menu">
+                <li><a href="{{ url_for('main.index') }}" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="{{ url_for('main.add_exam') }}" class="nav-link"><i class="fas fa-plus"></i> Add Exam</a></li>
+                <li><a href="{{ url_for('main.countdown') }}" class="nav-link"><i class="fas fa-clock"></i> Countdown</a></li>
+                <li><a href="{{ url_for('main.flashcards') }}" class="nav-link"><i class="fas fa-layer-group"></i> Flashcards</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            <span>{{ message }}</span>
+                            <button class="close-flash" onclick="this.parentElement.remove();">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <div id="quote-widget" class="quote-widget">
+        <div class="quote-content">
+            <i class="fas fa-quote-left"></i>
+            <p id="quote-text"></p>
+            <span id="quote-author"></span>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/quotes.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

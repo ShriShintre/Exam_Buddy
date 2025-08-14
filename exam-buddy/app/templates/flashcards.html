@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Flashcards - Exam Buddy{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1><i class="fas fa-layer-group"></i> Flashcards</h1>
+    <p style="color: white; font-size: 1.1em;">Quick summary cards for exam preparation</p>
+</div>
+
+{% if exams %}
+    <div class="exams-grid">
+        {% for exam in exams %}
+        <div class="exam-card">
+            <div class="exam-header">
+                <h3>{{ exam.title }}</h3>
+                <div class="exam-actions">
+                    <a href="{{ url_for('main.exam_flashcards', exam_id=exam.id) }}" class="btn btn-primary">
+                        <i class="fas fa-cards-blank"></i> View Cards
+                    </a>
+                </div>
+            </div>
+            
+            <div class="exam-info">
+                <p class="exam-subject"><i class="fas fa-book"></i> {{ exam.subject }}</p>
+                <p class="exam-date">
+                    <i class="fas fa-calendar"></i> 
+                    {{ exam.date.strftime('%B %d, %Y') }}
+                    {% if exam.time %}
+                        at {{ exam.time.strftime('%H:%M') }}
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="exam-stats">
+                <div class="stat">
+                    <i class="fas fa-layer-group"></i>
+                    <span>{{ exam.flashcards|length }} Flashcards</span>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-clock"></i>
+                    <span class="days-remaining" data-exam-date="{{ exam.date.isoformat() }}"></span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <i class="fas fa-layer-group empty-icon"></i>
+        <h2>No Exams Found</h2>
+        <p>Create exams first to add flashcards for quick study sessions.</p>
+        <a href="{{ url_for('main.add_exam') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Your First Exam
+        </a>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Calculate days remaining for each exam
+document.addEventListener('DOMContentLoaded', function() {
+    const daysRemainingElements = document.querySelectorAll('.days-remaining');
+    
+    daysRemainingElements.forEach(element => {
+        const examDate = new Date(element.dataset.examDate);
+        const today = new Date();
+        const timeDiff = examDate.getTime() - today.getTime();
+        const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        
+        if (daysDiff > 0) {
+            element.textContent = `${daysDiff} days left`;
+            element.className += ' days-positive';
+        } else if (daysDiff === 0) {
+            element.textContent = 'Today!';
+            element.className += ' days-today';
+        } else {
+            element.textContent = 'Past due';
+            element.className += ' days-past';
+        }
+    });
+});
+</script>
+{% endblock %}

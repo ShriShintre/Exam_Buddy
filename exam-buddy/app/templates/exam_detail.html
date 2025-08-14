@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exam.title }} - Exam Buddy{% endblock %}
+
+{% block content %}
+<div class="exam-detail-container">
+    <div class="exam-header">
+        <h1><i class="fas fa-info-circle"></i> {{ exam.title }}</h1>
+        <div class="exam-header-actions">
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Dashboard
+            </a>
+            <a href="{{ url_for('main.edit_exam', exam_id=exam.id) }}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{{ url_for('main.delete_exam', exam_id=exam.id) }}" 
+               class="btn btn-danger"
+               onclick="return confirm('Are you sure you want to delete this exam?')">
+                <i class="fas fa-trash-alt"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <div class="exam-info">
+        <p><strong>Subject:</strong> {{ exam.subject }}</p>
+        <p><strong>Date:</strong> {{ exam.date.strftime('%B %d, %Y') }}
+            {% if exam.time %}
+                at {{ exam.time.strftime('%H:%M') }}
+            {% endif %}
+        </p>
+        <p><strong>Description:</strong> {{ exam.description or 'No description provided.' }}</p>
+    </div>
+
+    <div class="tasks-container">
+        <h2><i class="fas fa-tasks"></i> To-Do List</h2>
+        <form method="POST" action="{{ url_for('main.add_task', exam_id=exam.id) }}" class="add-task-form">
+            <input type="text" name="description" placeholder="Add a new task..." required class="task-input">
+            <select name="priority" class="task-priority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+            </select>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Task</button>
+        </form>
+
+        {% if exam.tasks %}
+            <ul class="task-list">
+                {% for task in exam.tasks %}
+                <li class="task-item {%- if task.completed %} task-completed{%- endif %}">
+                    <form method="GET" action="{{ url_for('main.toggle_task', task_id=task.id) }}">
+                        <input type="checkbox" onchange="this.form.submit()" {%- if task.completed %} checked{%- endif %}>
+                        <span>{{ task.description }}</span>
+                        <small class="task-priority-label priority-{{ task.priority }}">[{{ task.priority }} priority]</small>
+                    </form>
+                    <a href="{{ url_for('main.delete_task', task_id=task.id) }}" class="btn btn-sm btn-danger task-delete"
+                       onclick="return confirm('Are you sure you want to delete this task?')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-tasks">No tasks have been added yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="notes-container">
+        <h2><i class="fas fa-file-alt"></i> Notes</h2>
+        <form method="POST" action="{{ url_for('main.upload_note', exam_id=exam.id) }}" enctype="multipart/form-data" class="upload-note-form">
+            <input type="file" name="file" required>
+            <button type="submit" class="btn btn-secondary"><i class="fas fa-upload"></i> Upload Note</button>
+        </form>
+
+        {% if exam.notes %}
+            <ul class="note-list">
+                {% for note in exam.notes %}
+                <li class="note-item">
+                    <a href="{{ url_for('main.download_note', note_id=note.id) }}" 
+                       class="note-download">
+                        <i class="fas fa-file-download"></i> {{ note.original_filename }}
+                    </a>
+                    <a href="{{ url_for('main.delete_note', note_id=note.id) }}" class="btn btn-sm btn-danger note-delete"
+                       onclick="return confirm('Are you sure you want to delete this note?')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-notes">No notes have been uploaded yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="exam-progress">
+        <h2><i class="fas fa-chart-line"></i> Progress Overview</h2>
+        <div class="progress-info">
+            <span>Progress: {{ exam.progress_percentage() }}%</span>
+            <span class="task-count">{{ exam.tasks|selectattr('completed')|list|length }}/{{ exam.tasks|length }} tasks</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ exam.progress_percentage() }}%"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

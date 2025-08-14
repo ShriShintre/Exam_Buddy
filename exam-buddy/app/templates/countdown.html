@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Exam Countdown - Exam Buddy{% endblock %}
+
+{% block content %}
+<div class="countdown-container">
+    <h1><i class="fas fa-clock"></i> Exam Countdown</h1>
+
+    {% if exams %}
+        <div class="exams-grid">
+            {% for exam in exams %}
+            <div class="exam-card">
+                <div class="exam-header">
+                    <h3>{{ exam.title }}</h3>
+                    <div class="exam-info">
+                        <p class="exam-subject"><i class="fas fa-book"></i> {{ exam.subject }}</p>
+                        <p class="exam-date">
+                            <i class="fas fa-calendar"></i>
+                            {{ exam.date.strftime('%B %d, %Y') }}
+                            {% if exam.time %}
+                                at {{ exam.time.strftime('%H:%M') }}
+                            {% endif %}
+                        </p>
+                        <p class="days-remaining" data-exam-date="{{ exam.date.isoformat() }}"></p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-graduation-cap empty-icon"></i>
+            <h2>No Upcoming Exams</h2>
+            <p>There are no exams scheduled for the future. Add an exam to start a countdown.</p>
+            <a href="{{ url_for('main.add_exam') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Exam
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Calculate days remaining for each exam
+document.addEventListener('DOMContentLoaded', function() {
+    const daysRemainingElements = document.querySelectorAll('.days-remaining');
+    
+    daysRemainingElements.forEach(element => {
+        const examDate = new Date(element.dataset.examDate);
+        const today = new Date();
+        const timeDiff = examDate.getTime() - today.getTime();
+        const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        
+        if (daysDiff > 0) {
+            element.textContent = `${daysDiff} days left`;
+            element.className += ' days-positive';
+        } else if (daysDiff === 0) {
+            element.textContent = 'Today!';
+            element.className += ' days-today';
+        } else {
+            element.textContent = 'Past due';
+            element.className += ' days-past';
+        }
+    });
+});
+</script>
+{% endblock %}
